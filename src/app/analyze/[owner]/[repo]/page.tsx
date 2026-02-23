@@ -1,7 +1,26 @@
 import { analyzeRepo, type FileNode, type FileEdge } from "@/lib/github";
 import AnalyzeView from "@/components/AnalyzeView";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ owner: string; repo: string }>;
+}): Promise<Metadata> {
+  const { owner, repo } = await params;
+  const title = `${owner}/${repo} — Architect`;
+  const description = `Interactive architecture visualization of ${owner}/${repo}. See dependencies, hotspots, and code structure.`;
+  const ogUrl = `/api/og?repo=${encodeURIComponent(`${owner}/${repo}`)}`;
+
+  return {
+    title,
+    description,
+    openGraph: { title, description, images: [{ url: ogUrl, width: 1200, height: 630 }] },
+    twitter: { card: "summary_large_image", title, description, images: [ogUrl] },
+  };
+}
 
 export default async function AnalyzePage({
   params,
