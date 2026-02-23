@@ -124,6 +124,13 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Compare link */}
+      <div className="mt-12">
+        <a href="/compare" className="text-[13px] text-text-2 hover:text-accent transition-colors border border-border-1 px-4 py-2 rounded-xl hover:border-accent/30">
+          ⚖ Compare two repos
+        </a>
+      </div>
+
       {/* Footer */}
       <div className="mt-auto pt-16 pb-8 text-[11px] text-text-3">
         Built overnight by Basirah · Powered by GitHub API
