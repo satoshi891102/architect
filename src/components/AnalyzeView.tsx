@@ -177,6 +177,18 @@ export default function AnalyzeView({
       selectedNode.importedBy.includes(node.id)
     );
 
+    // Glow for selected/related
+    if (isSelected || isRelated) {
+      ctx.save();
+      ctx.shadowColor = isSelected ? "#ffffff" : "#5E6AD2";
+      ctx.shadowBlur = isSelected ? 20 : 12;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, size + 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "transparent";
+      ctx.fill();
+      ctx.restore();
+    }
+
     // Draw node
     ctx.beginPath();
     ctx.arc(node.x, node.y, size, 0, 2 * Math.PI);
@@ -263,7 +275,21 @@ export default function AnalyzeView({
               ctx.fill();
             }) as any}
             onNodeClick={handleNodeClick as any}
-            linkColor={() => "rgba(94, 106, 210, 0.15)"}
+            linkColor={(link: any) => {
+              if (!selectedNode) return "rgba(94, 106, 210, 0.12)";
+              const src = typeof link.source === "object" ? link.source.id : link.source;
+              const tgt = typeof link.target === "object" ? link.target.id : link.target;
+              if (src === selectedNode.id) return "rgba(34, 197, 94, 0.6)";
+              if (tgt === selectedNode.id) return "rgba(96, 165, 250, 0.6)";
+              return "rgba(94, 106, 210, 0.06)";
+            }}
+            linkWidth={(link: any) => {
+              if (!selectedNode) return 0.5;
+              const src = typeof link.source === "object" ? link.source.id : link.source;
+              const tgt = typeof link.target === "object" ? link.target.id : link.target;
+              if (src === selectedNode.id || tgt === selectedNode.id) return 1.5;
+              return 0.3;
+            }}
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={1}
             backgroundColor="transparent"
