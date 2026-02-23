@@ -432,7 +432,7 @@ export default function AnalyzeView({
                       onClick={() => setSelectedNode(nodes.find(n => n.id === h.id) || null)}
                       className="flex items-center justify-between w-full px-2 py-1.5 rounded text-[11px] hover:bg-bg-0 transition-all"
                     >
-                      <span className="text-text-1 truncate">{h.name}</span>
+                      <span className="text-text-1 truncate" title={h.path}>{h.directory ? `${h.directory.split("/").pop()}/${h.name}` : h.name}</span>
                       <span className="text-text-3 shrink-0 ml-2">{h.connections} deps</span>
                     </button>
                   ))}
