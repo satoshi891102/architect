@@ -365,6 +365,35 @@ export default function AnalyzeView({
             <div className="p-4">
               <h2 className="text-[14px] font-semibold text-text-0 mb-4">Overview</h2>
 
+              {/* Architecture Summary */}
+              <div className="mb-5 p-3 rounded-lg bg-bg-0 border border-border-1">
+                <h3 className="text-[11px] font-medium text-accent uppercase tracking-wider mb-2">Architecture Insights</h3>
+                <div className="space-y-1.5 text-[11px] text-text-2 leading-relaxed">
+                  {hotspots.length > 0 && (
+                    <p>
+                      <span className="text-text-0 font-medium">{hotspots[0].name}</span> is the most connected file ({hotspots[0].connections} dependencies) — likely a central module.
+                    </p>
+                  )}
+                  {edges.length > 0 && (
+                    <p>
+                      {connectedFiles} of {codeFiles.length} code files are interconnected through {edges.length} import relationships.
+                    </p>
+                  )}
+                  {(() => {
+                    const dirs = new Set(nodes.map(n => n.directory).filter(Boolean));
+                    const topDirs = [...dirs].map(d => ({
+                      dir: d,
+                      count: nodes.filter(n => n.directory === d).length
+                    })).sort((a, b) => b.count - a.count).slice(0, 3);
+                    return topDirs.length > 0 ? (
+                      <p>
+                        Largest directories: {topDirs.map(d => `${d.dir.split("/").pop()}/ (${d.count})`).join(", ")}
+                      </p>
+                    ) : null;
+                  })()}
+                </div>
+              </div>
+
               {/* Stats */}
               <div className="grid grid-cols-2 gap-2 mb-5">
                 <div className="bg-bg-0 rounded-lg p-3 text-center">
@@ -422,10 +451,32 @@ export default function AnalyzeView({
                 </div>
               </div>
 
+              {/* Color Legend */}
+              <div className="mt-5">
+                <h3 className="text-[11px] font-medium text-text-2 uppercase tracking-wider mb-2">Legend</h3>
+                <div className="grid grid-cols-2 gap-1">
+                  {[
+                    { ext: "tsx", label: "React/TSX", color: "#61dafb" },
+                    { ext: "ts", label: "TypeScript", color: "#3178c6" },
+                    { ext: "js", label: "JavaScript", color: "#f0db4f" },
+                    { ext: "css", label: "CSS", color: "#264de4" },
+                    { ext: "json", label: "JSON", color: "#a3a3a3" },
+                    { ext: "md", label: "Markdown", color: "#ffffff" },
+                    { ext: "html", label: "HTML", color: "#e34c26" },
+                    { ext: "py", label: "Python", color: "#3572A5" },
+                  ].map(item => (
+                    <div key={item.ext} className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
+                      <span className="text-[10px] text-text-3">{item.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Tip */}
               <div className="mt-5 p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <p className="text-[11px] text-text-2 leading-relaxed">
-                  <span className="font-medium text-accent">Tip:</span> Click any node in the graph to see its imports and dependents. Use the search to find specific files.
+                  <span className="font-medium text-accent">Tip:</span> Click any node in the graph to see its imports and dependents. Scroll to zoom, drag to pan.
                 </p>
               </div>
             </div>
