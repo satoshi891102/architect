@@ -104,6 +104,7 @@ export default function AnalyzeView({
   const [searchQuery, setSearchQuery] = useState("");
   const [filterExt, setFilterExt] = useState<string | null>(null);
   const [dims, setDims] = useState({ w: 800, h: 600 });
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // Track window size
   useEffect(() => {
@@ -237,6 +238,14 @@ export default function AnalyzeView({
       <div className="flex flex-1 overflow-hidden">
         {/* Graph area */}
         <div className="flex-1 relative bg-bg-0">
+          {/* Mobile sidebar toggle */}
+          <button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            className="md:hidden absolute top-3 right-3 z-20 bg-accent text-white px-3 py-1.5 rounded-lg text-[11px] font-medium shadow-lg"
+          >
+            {showMobileSidebar ? "Graph" : "Stats"}
+          </button>
+
           {/* Search + filter overlay */}
           <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
             <input
@@ -389,7 +398,7 @@ export default function AnalyzeView({
           </div>
         ) : (
           /* Default sidebar — overview */
-          <div className="w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0 max-md:hidden">
+          <div className={`w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0 ${showMobileSidebar ? "max-md:fixed max-md:inset-0 max-md:w-full max-md:z-10 max-md:border-0" : "max-md:hidden"}`}>
             <div className="p-4">
               <h2 className="text-[14px] font-semibold text-text-0 mb-4">Overview</h2>
 

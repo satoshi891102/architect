@@ -44,7 +44,7 @@ export default async function AnalyzePage({
       <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center">
           <h1 className="text-[20px] font-semibold text-text-0 mb-2">Analysis Failed</h1>
-          <p className="text-[13px] text-text-2 mb-4">{error || "Unknown error"}</p>
+          <p className="text-[13px] text-text-2 mb-4">{error?.includes("404") ? "Repository not found or private" : error || "Unknown error"}</p>
           <a href="/" className="text-accent text-[13px] hover:underline">← Try another repo</a>
         </div>
       </div>

@@ -8,6 +8,7 @@ export const metadata: Metadata = {
     title: "Architect — See any codebase as a living map",
     description: "Paste a GitHub URL, instantly visualize architecture, dependencies, and complexity hotspots.",
     type: "website",
+    images: [{ url: "/api/og?repo=Architect&files=∞&deps=∞", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
