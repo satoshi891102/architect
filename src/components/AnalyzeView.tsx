@@ -306,7 +306,9 @@ export default function AnalyzeView({
             backgroundColor="transparent"
             width={dims.w < 768 ? dims.w : dims.w - 320}
             height={dims.h - 52}
-            cooldownTicks={100}
+            cooldownTicks={150}
+            d3AlphaDecay={0.02}
+            d3VelocityDecay={0.3}
             enableZoomInteraction={true}
             enablePanInteraction={true}
           />

@@ -113,9 +113,11 @@ export function parseImports(content: string, filePath: string): string[] {
   const requireRegex = /require\s*\(\s*['"]([^'"]+)['"]\s*\)/g;
   // Match: import "..." or import '...'
   const sideEffectRegex = /import\s+['"]([^'"]+)['"]/g;
+  // Match: @import "..." or @import url("...")
+  const cssImportRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?/g;
 
   let match;
-  for (const regex of [importRegex, requireRegex, sideEffectRegex]) {
+  for (const regex of [importRegex, requireRegex, sideEffectRegex, cssImportRegex]) {
     regex.lastIndex = 0;
     while ((match = regex.exec(content)) !== null) {
       const specifier = match[1];
@@ -171,7 +173,7 @@ export async function analyzeRepo(owner: string, repo: string, token?: string): 
 
   const blobs = tree.filter(f => f.type === "blob");
   const allPaths = blobs.map(f => f.path);
-  const codeExts = ["ts", "tsx", "js", "jsx", "py", "go", "rs"];
+  const codeExts = ["ts", "tsx", "js", "jsx", "py", "go", "rs", "css", "scss", "vue", "svelte"];
 
   // Build nodes
   const nodes: FileNode[] = blobs.map(f => {
@@ -197,13 +199,13 @@ export async function analyzeRepo(owner: string, repo: string, token?: string): 
   const codeFiles = blobs.filter(f => {
     const ext = f.path.split(".").pop() || "";
     return codeExts.includes(ext);
-  }).slice(0, 80); // Limit API calls
+  }).slice(0, 150); // Increased limit for better coverage
 
   const edges: FileEdge[] = [];
   const edgeSet = new Set<string>();
 
   // Fetch content and parse imports in batches
-  const BATCH_SIZE = 10;
+  const BATCH_SIZE = 15;
   for (let i = 0; i < codeFiles.length; i += BATCH_SIZE) {
     const batch = codeFiles.slice(i, i + BATCH_SIZE);
     const contents = await Promise.all(
