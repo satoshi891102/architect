@@ -201,7 +201,7 @@ export default function AnalyzeView({
   }, [selectedNode]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       {/* Header */}
       <div className="border-b border-border-1 px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">
