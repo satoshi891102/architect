@@ -4,6 +4,16 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Architect — See any codebase as a living map",
   description: "Paste a GitHub URL, instantly visualize architecture, dependencies, and complexity hotspots.",
+  openGraph: {
+    title: "Architect — See any codebase as a living map",
+    description: "Paste a GitHub URL, instantly visualize architecture, dependencies, and complexity hotspots.",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Architect — See any codebase as a living map",
+    description: "Paste a GitHub URL, instantly visualize architecture, dependencies, and complexity hotspots.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

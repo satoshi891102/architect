@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import dynamic from "next/dynamic";
 import type { FileNode, FileEdge } from "@/lib/github";
 import Link from "next/link";
+import FileTree from "./FileTree";
 
 const ForceGraph2D = dynamic(() => import("react-force-graph-2d"), { ssr: false });
 
@@ -96,9 +97,19 @@ export default function AnalyzeView({
   totalFiles: number;
   totalSize: number;
 }) {
-  const [selectedNode, setSelectedNode] = useState<FileNode | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [selectedNode, setSelectedNode] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterExt, setFilterExt] = useState<string | null>(null);
+  const [dims, setDims] = useState({ w: 800, h: 600 });
+
+  // Track window size
+  useEffect(() => {
+    const update = () => setDims({ w: window.innerWidth, h: window.innerHeight });
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const graphRef = useRef<any>(null);
 
@@ -256,17 +267,17 @@ export default function AnalyzeView({
             linkDirectionalArrowLength={3}
             linkDirectionalArrowRelPos={1}
             backgroundColor="transparent"
-            width={typeof window !== "undefined" ? window.innerWidth - (selectedNode ? 320 : 0) : 800}
-            height={typeof window !== "undefined" ? window.innerHeight - 52 : 600}
+            width={dims.w < 768 ? dims.w : dims.w - 320}
+            height={dims.h - 52}
             cooldownTicks={100}
             enableZoomInteraction={true}
             enablePanInteraction={true}
           />
         </div>
 
-        {/* Sidebar */}
+        {/* Sidebar — fixed on desktop, overlay on mobile */}
         {selectedNode ? (
-          <div className="w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0">
+          <div className="w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0 max-md:fixed max-md:right-0 max-md:top-[52px] max-md:bottom-0 max-md:z-20 max-md:shadow-2xl">
             <div className="p-4">
               {/* Close button */}
               <div className="flex items-start justify-between mb-3">
@@ -298,7 +309,7 @@ export default function AnalyzeView({
                 <div className="mb-4">
                   <h3 className="text-[11px] font-medium text-text-2 uppercase tracking-wider mb-2">Imports →</h3>
                   <div className="space-y-1">
-                    {selectedNode.imports.map(imp => (
+                    {selectedNode.imports.map((imp: string) => (
                       <button
                         key={imp}
                         onClick={() => {
@@ -320,7 +331,7 @@ export default function AnalyzeView({
                 <div className="mb-4">
                   <h3 className="text-[11px] font-medium text-text-2 uppercase tracking-wider mb-2">← Used by</h3>
                   <div className="space-y-1">
-                    {selectedNode.importedBy.map(imp => (
+                    {selectedNode.importedBy.map((imp: string) => (
                       <button
                         key={imp}
                         onClick={() => {
@@ -350,7 +361,7 @@ export default function AnalyzeView({
           </div>
         ) : (
           /* Default sidebar — overview */
-          <div className="w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0">
+          <div className="w-[320px] border-l border-border-1 bg-bg-1 overflow-y-auto shrink-0 max-md:hidden">
             <div className="p-4">
               <h2 className="text-[14px] font-semibold text-text-0 mb-4">Overview</h2>
 
@@ -399,8 +410,20 @@ export default function AnalyzeView({
                 </div>
               </div>
 
+              {/* File Tree */}
+              <div className="mt-5">
+                <h3 className="text-[11px] font-medium text-text-2 uppercase tracking-wider mb-2">File Tree</h3>
+                <div className="max-h-[300px] overflow-y-auto border border-border-1 rounded-lg bg-bg-0 p-1">
+                  <FileTree
+                    files={nodes}
+                    selectedId={selectedNode?.id as string | undefined}
+                    onSelect={(f) => setSelectedNode(f)}
+                  />
+                </div>
+              </div>
+
               {/* Tip */}
-              <div className="mt-6 p-3 rounded-lg bg-accent/5 border border-accent/10">
+              <div className="mt-5 p-3 rounded-lg bg-accent/5 border border-accent/10">
                 <p className="text-[11px] text-text-2 leading-relaxed">
                   <span className="font-medium text-accent">Tip:</span> Click any node in the graph to see its imports and dependents. Use the search to find specific files.
                 </p>
