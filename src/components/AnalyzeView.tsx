@@ -88,6 +88,7 @@ export default function AnalyzeView({
   languages,
   totalFiles,
   totalSize,
+  cycles = [],
 }: {
   owner: string;
   repo: string;
@@ -96,6 +97,7 @@ export default function AnalyzeView({
   languages: Record<string, number>;
   totalFiles: number;
   totalSize: number;
+  cycles?: string[][];
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [selectedNode, setSelectedNode] = useState<any>(null);
@@ -464,6 +466,42 @@ export default function AnalyzeView({
                   ))}
                 </div>
               </div>
+
+              {/* Circular Dependencies */}
+              {cycles.length > 0 && (
+                <div className="mt-5">
+                  <h3 className="text-[11px] font-medium text-red uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-red animate-pulse" />
+                    Circular Dependencies ({cycles.length})
+                  </h3>
+                  <div className="space-y-2">
+                    {cycles.slice(0, 5).map((cycle, i) => (
+                      <div key={i} className="p-2 rounded-lg bg-red/5 border border-red/20 text-[10px]">
+                        <div className="flex flex-wrap items-center gap-1">
+                          {cycle.map((file, j) => (
+                            <span key={j} className="flex items-center gap-1">
+                              <button
+                                onClick={() => {
+                                  const n = nodes.find(n => n.id === file);
+                                  if (n) setSelectedNode(n);
+                                }}
+                                className="text-text-1 hover:text-red transition-colors truncate max-w-[120px]"
+                                title={file}
+                              >
+                                {file.split("/").pop()}
+                              </button>
+                              {j < cycle.length - 1 && <span className="text-red/50">→</span>}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                    {cycles.length > 5 && (
+                      <p className="text-[10px] text-text-3">+ {cycles.length - 5} more cycles</p>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* File Tree */}
               <div className="mt-5">

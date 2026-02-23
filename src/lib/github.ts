@@ -162,6 +162,7 @@ export async function analyzeRepo(owner: string, repo: string, token?: string): 
   languages: Record<string, number>;
   totalFiles: number;
   totalSize: number;
+  cycles: string[][];
 }> {
   const [tree, languages] = await Promise.all([
     fetchRepoTree(owner, repo, token),
@@ -234,11 +235,49 @@ export async function analyzeRepo(owner: string, repo: string, token?: string): 
     }
   }
 
+  // Detect circular dependencies
+  const cycles: string[][] = [];
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+  const stack: string[] = [];
+
+  function dfs(nodeId: string) {
+    if (cycles.length >= 10) return; // Cap at 10 cycles
+    visited.add(nodeId);
+    inStack.add(nodeId);
+    stack.push(nodeId);
+
+    const node = nodeMap.get(nodeId);
+    if (node) {
+      for (const imp of node.imports) {
+        if (!visited.has(imp)) {
+          dfs(imp);
+        } else if (inStack.has(imp)) {
+          // Found a cycle
+          const cycleStart = stack.indexOf(imp);
+          if (cycleStart >= 0) {
+            cycles.push([...stack.slice(cycleStart), imp]);
+          }
+        }
+      }
+    }
+
+    stack.pop();
+    inStack.delete(nodeId);
+  }
+
+  for (const node of nodes) {
+    if (!visited.has(node.id) && node.imports.length > 0) {
+      dfs(node.id);
+    }
+  }
+
   return {
     nodes,
     edges,
     languages,
     totalFiles: blobs.length,
     totalSize: blobs.reduce((s, f) => s + f.size, 0),
+    cycles,
   };
 }

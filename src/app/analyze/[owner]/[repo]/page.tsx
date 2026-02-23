@@ -60,6 +60,7 @@ export default async function AnalyzePage({
       languages={analysis.languages}
       totalFiles={analysis.totalFiles}
       totalSize={analysis.totalSize}
+      cycles={analysis.cycles}
     />
   );
 }
