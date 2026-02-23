@@ -39,13 +39,16 @@ export default function Home() {
   };
 
   const examples = [
-    { label: "Next.js", repo: "vercel/next.js" },
-    { label: "React", repo: "facebook/react" },
     { label: "Shadcn UI", repo: "shadcn-ui/ui" },
+    { label: "tRPC", repo: "trpc/trpc" },
+    { label: "Zustand", repo: "pmndrs/zustand" },
+    { label: "T3 Stack", repo: "t3-oss/create-t3-app" },
   ];
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 relative overflow-hidden">
+      {/* Subtle grid background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(94,106,210,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(94,106,210,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
       {/* Hero */}
       <div className="text-center max-w-2xl mx-auto mb-12">
         <div className="flex items-center justify-center gap-2 mb-6">
