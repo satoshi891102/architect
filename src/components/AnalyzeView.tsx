@@ -229,9 +229,20 @@ export default function AnalyzeView({
           </h1>
         </div>
         <div className="flex items-center gap-4 text-[11px] text-text-3">
-          <span>{totalFiles} files</span>
-          <span>{formatBytes(totalSize)}</span>
-          <span>{edges.length} dependencies</span>
+          <span className="max-sm:hidden">{totalFiles} files</span>
+          <span className="max-sm:hidden">{formatBytes(totalSize)}</span>
+          <span className="max-sm:hidden">{edges.length} dependencies</span>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              const btn = document.getElementById("share-btn");
+              if (btn) { btn.textContent = "Copied!"; setTimeout(() => { btn.textContent = "Share"; }, 2000); }
+            }}
+            id="share-btn"
+            className="px-2.5 py-1 rounded-md bg-accent/10 text-accent hover:bg-accent/20 transition-all font-medium"
+          >
+            Share
+          </button>
         </div>
       </div>
 
