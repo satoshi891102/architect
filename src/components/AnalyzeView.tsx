@@ -393,6 +393,38 @@ export default function AnalyzeView({
             <div className="p-4">
               <h2 className="text-[14px] font-semibold text-text-0 mb-4">Overview</h2>
 
+              {/* Health Score */}
+              {(() => {
+                let score = 100;
+                // Penalty for circular deps
+                score -= cycles.length * 10;
+                // Penalty for god files (>15 connections)
+                const godFiles = hotspots.filter(h => h.connections > 15).length;
+                score -= godFiles * 8;
+                // Bonus for good modularity (many files, few deps per file)
+                const avgDeps = codeFiles.length > 0 ? edges.length / codeFiles.length : 0;
+                if (avgDeps > 5) score -= 10;
+                // Bonus for having tests
+                const hasTests = nodes.some(n => n.path.includes("test") || n.path.includes("spec") || n.path.includes("__tests__"));
+                if (hasTests) score += 5;
+                score = Math.max(0, Math.min(100, score));
+                const color = score >= 80 ? "text-green" : score >= 60 ? "text-amber" : "text-red";
+                const label = score >= 80 ? "Healthy" : score >= 60 ? "Moderate" : "Needs Attention";
+                return (
+                  <div className="mb-5 flex items-center gap-3 p-3 rounded-lg bg-bg-0 border border-border-1">
+                    <div className={`text-[28px] font-bold ${color}`}>{score}</div>
+                    <div>
+                      <div className={`text-[12px] font-medium ${color}`}>{label}</div>
+                      <div className="text-[10px] text-text-3">
+                        {cycles.length > 0 && `${cycles.length} circular dep${cycles.length > 1 ? "s" : ""} · `}
+                        {godFiles > 0 && `${godFiles} god file${godFiles > 1 ? "s" : ""} · `}
+                        {hasTests ? "Tests found" : "No tests detected"}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Architecture Summary */}
               <div className="mb-5 p-3 rounded-lg bg-bg-0 border border-border-1">
                 <h3 className="text-[11px] font-medium text-accent uppercase tracking-wider mb-2">Architecture Insights</h3>
