@@ -254,7 +254,7 @@ export async function analyzeRepo(owner: string, repo: string, token?: string): 
   const codeFiles = blobs.filter(f => {
     const ext = f.path.split(".").pop() || "";
     return codeExts.includes(ext);
-  }).slice(0, 150); // Increased limit for better coverage
+  }).slice(0, blobs.length < 200 ? 200 : 150); // Analyze more files for smaller repos
 
   const edges: FileEdge[] = [];
   const edgeSet = new Set<string>();
