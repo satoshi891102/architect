@@ -2,7 +2,7 @@ import { analyzeRepo, type FileNode, type FileEdge } from "@/lib/github";
 import AnalyzeView from "@/components/AnalyzeView";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300; // ISR: cache analysis for 5 minutes
 
 export async function generateMetadata({
   params,
