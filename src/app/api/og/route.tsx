@@ -7,6 +7,7 @@ export async function GET(request: Request) {
   const repo = searchParams.get("repo") || "owner/repo";
   const files = searchParams.get("files") || "0";
   const deps = searchParams.get("deps") || "0";
+  const score = searchParams.get("score") || "";
 
   return new ImageResponse(
     (
@@ -82,6 +83,14 @@ export async function GET(request: Request) {
             </div>
             <div style={{ fontSize: "14px", color: "#6b6f76" }}>Dependencies</div>
           </div>
+          {score && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <div style={{ fontSize: "36px", fontWeight: 700, color: parseInt(score) >= 80 ? "#22c55e" : parseInt(score) >= 60 ? "#f59e0b" : "#ef4444" }}>
+                {score}
+              </div>
+              <div style={{ fontSize: "14px", color: "#6b6f76" }}>Health</div>
+            </div>
+          )}
         </div>
         <div
           style={{
