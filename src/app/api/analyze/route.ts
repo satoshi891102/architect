@@ -1,77 +1,79 @@
+import { analyzeRepo } from "@/lib/github";
 import { NextRequest, NextResponse } from "next/server";
-import { analyzeRepo, computeHealthScore } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
+  const owner = searchParams.get("owner");
   const repo = searchParams.get("repo");
 
-  if (!repo) {
+  if (!owner || !repo) {
     return NextResponse.json(
-      { error: "Missing 'repo' parameter. Use ?repo=owner/repo" },
+      { error: "Missing owner or repo parameter. Usage: /api/analyze?owner=pmndrs&repo=zustand" },
       { status: 400 }
     );
   }
-
-  const parts = repo.split("/");
-  if (parts.length !== 2) {
-    return NextResponse.json(
-      { error: "Invalid repo format. Use owner/repo" },
-      { status: 400 }
-    );
-  }
-
-  const [owner, repoName] = parts;
-  const token = process.env.GITHUB_TOKEN || "";
 
   try {
-    const analysis = await analyzeRepo(owner, repoName, token);
+    const token = process.env.GITHUB_TOKEN || "";
+    const analysis = await analyzeRepo(owner, repo, token);
 
-    // Compute summary stats
-    const codeFiles = analysis.nodes.filter(n =>
-      ["ts", "tsx", "js", "jsx", "py", "go", "rs", "css"].includes(n.ext)
+    // Compute health score
+    let score = 100;
+    const codeExts = ["ts", "tsx", "js", "jsx", "py", "go", "rs"];
+    const codeFiles = analysis.nodes.filter(n => codeExts.includes(n.ext));
+    score -= analysis.cycles.length * 10;
+    const godFiles = analysis.nodes
+      .map(n => n.imports.length + n.importedBy.length)
+      .filter(c => c > 15).length;
+    score -= godFiles * 8;
+    const avgDeps = codeFiles.length > 0 ? analysis.edges.length / codeFiles.length : 0;
+    if (avgDeps > 5) score -= 10;
+    const hasTests = analysis.nodes.some(n =>
+      n.path.includes("test") || n.path.includes("spec") || n.path.includes("__tests__")
     );
-    const connectedFiles = new Set([
-      ...analysis.edges.map(e => e.source),
-      ...analysis.edges.map(e => e.target),
-    ]).size;
+    if (hasTests) score += 5;
+    score = Math.max(0, Math.min(100, score));
 
+    // Top hotspots
     const hotspots = [...analysis.nodes]
-      .map(n => ({ path: n.path, name: n.name, connections: n.imports.length + n.importedBy.length }))
+      .map(n => ({
+        path: n.path,
+        imports: n.imports.length,
+        importedBy: n.importedBy.length,
+        connections: n.imports.length + n.importedBy.length,
+      }))
       .filter(n => n.connections > 0)
       .sort((a, b) => b.connections - a.connections)
       .slice(0, 10);
 
-    // Health score
-    const health = computeHealthScore(analysis);
-    const healthScore = health.score;
-    const hasTests = health.hasTests;
-    const godFiles = health.godFiles;
-
     return NextResponse.json({
-      repo: `${owner}/${repoName}`,
-      summary: {
-        totalFiles: analysis.totalFiles,
-        totalSize: analysis.totalSize,
-        codeFiles: codeFiles.length,
-        dependencies: analysis.edges.length,
-        connectedFiles,
-        healthScore,
-        hasTests,
+      repo: `${owner}/${repo}`,
+      health: {
+        score,
+        label: score >= 80 ? "Healthy" : score >= 60 ? "Moderate" : "Needs Attention",
         circularDeps: analysis.cycles.length,
         godFiles,
+        hasTests,
+      },
+      stats: {
+        totalFiles: analysis.totalFiles,
+        codeFiles: codeFiles.length,
+        totalSize: analysis.totalSize,
+        dependencies: analysis.edges.length,
+        connectedFiles: new Set([
+          ...analysis.edges.map(e => e.source),
+          ...analysis.edges.map(e => e.target),
+        ]).size,
       },
       languages: analysis.languages,
       hotspots,
-      cycles: analysis.cycles,
-      edges: analysis.edges.length,
-      visualUrl: `https://app-five-xi-91.vercel.app/analyze/${owner}/${repoName}`,
+      cycles: analysis.cycles.map(c => c.map(f => f.split("/").pop())),
+      visualization: `https://architect-viz.vercel.app/analyze/${owner}/${repo}`,
     });
   } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : "Analysis failed" },
-      { status: 500 }
-    );
+    const msg = e instanceof Error ? e.message : "Analysis failed";
+    return NextResponse.json({ error: msg }, { status: msg.includes("404") ? 404 : 500 });
   }
 }
