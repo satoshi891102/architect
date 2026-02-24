@@ -145,7 +145,7 @@ export default function AnalyzeView({
   }, [nodes, edges, filterExt, searchQuery]);
 
   // Stats
-  const codeFiles = nodes.filter(n => ["ts", "tsx", "js", "jsx"].includes(n.ext));
+  const codeFiles = nodes.filter(n => ["ts", "tsx", "js", "jsx", "py", "go", "rs", "css", "scss", "vue", "svelte"].includes(n.ext));
   const connectedFiles = new Set([...edges.map(e => e.source), ...edges.map(e => e.target)]).size;
 
   // File extensions for filter
