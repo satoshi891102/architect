@@ -122,8 +122,37 @@ export function parseImports(content: string, filePath: string): string[] {
 
   let match;
 
-  // Python-specific handling
+  // Language-specific handling
   const ext = filePath.split(".").pop() || "";
+
+  // Go: import "path" or import ( "path" )
+  if (ext === "go") {
+    const goImportRegex = /import\s+(?:\(\s*)?"([^"]+)"/g;
+    const goBlockRegex = /import\s*\(([^)]+)\)/g;
+    // Single imports
+    goImportRegex.lastIndex = 0;
+    while ((match = goImportRegex.exec(content)) !== null) {
+      const pkg = match[1];
+      // Only resolve project-local imports (contain the repo path or start with ./)
+      if (pkg.includes("/") && !pkg.includes(".com/") && !pkg.includes(".org/") && !pkg.includes(".io/")) {
+        imports.push(pkg);
+      }
+    }
+    // Block imports
+    goBlockRegex.lastIndex = 0;
+    while ((match = goBlockRegex.exec(content)) !== null) {
+      const block = match[1];
+      const lineRegex = /"([^"]+)"/g;
+      let lineMatch;
+      while ((lineMatch = lineRegex.exec(block)) !== null) {
+        const pkg = lineMatch[1];
+        if (pkg.includes("/") && !pkg.includes(".com/") && !pkg.includes(".org/") && !pkg.includes(".io/")) {
+          imports.push(pkg);
+        }
+      }
+    }
+  }
+
   if (ext === "py") {
     pyFromRegex.lastIndex = 0;
     while ((match = pyFromRegex.exec(content)) !== null) {
