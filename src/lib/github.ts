@@ -116,7 +116,31 @@ export function parseImports(content: string, filePath: string): string[] {
   // Match: @import "..." or @import url("...")
   const cssImportRegex = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?/g;
 
+  // Python: from X import Y  or  import X
+  const pyFromRegex = /from\s+(\.+\w*(?:\.\w+)*)\s+import/g;
+  const pyImportRegex = /^import\s+(\w+(?:\.\w+)*)/gm;
+
   let match;
+
+  // Python-specific handling
+  const ext = filePath.split(".").pop() || "";
+  if (ext === "py") {
+    pyFromRegex.lastIndex = 0;
+    while ((match = pyFromRegex.exec(content)) !== null) {
+      const specifier = match[1];
+      if (specifier.startsWith(".")) {
+        // Relative python import: from .foo import bar → ./foo
+        const dots = specifier.match(/^\.+/)?.[0].length || 1;
+        const module = specifier.slice(dots);
+        const parts = dir.split("/");
+        for (let i = 1; i < dots; i++) parts.pop();
+        if (module) parts.push(...module.split("."));
+        const resolved = parts.join("/");
+        imports.push(resolved);
+      }
+    }
+  }
+
   for (const regex of [importRegex, requireRegex, sideEffectRegex, cssImportRegex]) {
     regex.lastIndex = 0;
     while ((match = regex.exec(content)) !== null) {
@@ -148,13 +172,15 @@ export function resolveImportPath(importPath: string, allPaths: string[]): strin
   // Direct match
   if (allPaths.includes(importPath)) return importPath;
   // Try extensions
-  for (const ext of [".ts", ".tsx", ".js", ".jsx", ".css"]) {
+  for (const ext of [".ts", ".tsx", ".js", ".jsx", ".css", ".py"]) {
     if (allPaths.includes(importPath + ext)) return importPath + ext;
   }
-  // Try /index
+  // Try /index or /__init__
   for (const ext of [".ts", ".tsx", ".js", ".jsx"]) {
     if (allPaths.includes(importPath + "/index" + ext)) return importPath + "/index" + ext;
   }
+  // Python __init__.py
+  if (allPaths.includes(importPath + "/__init__.py")) return importPath + "/__init__.py";
   return null;
 }
 
