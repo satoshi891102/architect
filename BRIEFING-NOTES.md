@@ -1,50 +1,37 @@
-# Architect — Morning Briefing Notes
+# Morning Briefing Notes — Feb 24, 2026
 
-## One-liner
-Interactive code intelligence platform — paste any GitHub URL, see architecture as a living map with health scores.
-
-## Why This Matters
-1. CodeSee (raised $10M for similar concept) is dead. Market gap exists.
-2. Developers share these visualizations constantly on Twitter/HN.
-3. Doubles as bespoke IP — we can use this to analyze our own codebases before builds.
-4. Multi-language (TS/JS/Python/Go/Rust) — not just a JS tool.
-
-## What It Does
-- Force-directed graph visualization of any GitHub repo
-- Health Score (0-100) computed from architecture quality
-- Circular dependency detection with visual warnings  
-- Architecture insights (identifies central modules, god files)
-- Language breakdown, complexity hotspots
-- File tree browser, search, type filtering
-- Click any node → see imports/dependents with colored edges
-- Dynamic OG images for social sharing
-- Mobile responsive (Stats toggle button on mobile)
-
-## Tested With
-- shadcn-ui/ui (9,690 files) — TS monorepo
-- pmndrs/zustand (143 files) — TS library
-- pallets/flask (235 files) — Python framework
-- gin-gonic/gin — Go web framework
-- BurntSushi/ripgrep — Rust CLI tool
-- satoshi891102/architect (self-analysis)
-
-## Build Stats
-- 26 git commits in ~3 hours
-- QA: B+ (Mizan)
-- Languages parsed: TypeScript, JavaScript, Python, Go, Rust, CSS
-- ISR caching (5min) for fast repeat visits
-
-## Live
-- https://architect-viz.vercel.app
-- https://app-five-xi-91.vercel.app
+## What Shipped
+**Architect** — Interactive code intelligence platform
+- URL: https://architect-viz.vercel.app
 - GitHub: github.com/satoshi891102/architect
 
-## Known Limitations (from QA)
-- Graph can be dense on very large repos (>5K files)
-- Private repos require GitHub token
-- OG image generation takes ~1.8s (acceptable)
+## Thesis
+Code visualization tools are a proven category (CodeSee raised $10M, Sourcegraph raised $225M). But existing tools are either dead (CodeSee acquired/sunset), enterprise-only (Sourcegraph), or static (repo-visualizer). Architect is the free, instant, interactive version — paste a URL, get a living map in seconds.
+
+## What Makes It Special
+- **Health Score** (0-100) — instantly tells you if a codebase is healthy or needs attention
+- **Circular dependency detection** — real graph algorithm, not just pretty pictures
+- **Compare mode** — side-by-side repo comparison (Zustand 100 vs Jotai 79)
+- **JSON API** — programmatic access for CI/CD integration potential
+- **17 features** built in one overnight session
+
+## Honest Assessment
+**Strengths:** Genuinely useful for developers. Works on large repos (tested shadcn-ui with 9690 files). Clean design. Multiple features. QA passed B+.
+**Weaknesses:** No tests. 80-file analysis cap means very large repos may miss some dependencies. Mobile graph experience is basic (toggle only, not redesigned). Health score algorithm is simple.
+**Viral potential:** Medium-high. Dev tools consistently trend on HN/Twitter. The "health score" hook is shareable. Compare feature creates natural content.
+
+## Build Stats
+- 28 commits
+- ~800+ lines of code
+- 5 routes: home, analyze, compare landing, compare results, API (OG images)
+- Features: force graph, health score, circular deps, file tree, language bar, hotspots, compare mode, mobile sidebar, dynamic OG
+- TypeScript strict: PASS
+- QA (Mizan): B+
+- 4 repos tested: zustand (100), jotai (79), shadcn-ui/ui, seekerchat-v10
+- Compare tested: zustand vs jotai — works perfectly
 
 ## Revenue Path
-- Free tool → audience builder → HN/Twitter virality potential
-- Premium features later: private repos, CI integration, historical tracking
-- Positions us as "dev tools" brand
+- Free tier drives traffic
+- Premium: private repo analysis, team dashboards, historical tracking
+- API tier: CI/CD integration (health score checks on PRs)
+- Audience play: share repo comparisons, build dev following
