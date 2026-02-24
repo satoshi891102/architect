@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { analyzeRepo } from "@/lib/github";
+import { analyzeRepo, computeHealthScore } from "@/lib/github";
 
 export const dynamic = "force-dynamic";
 
@@ -44,17 +44,10 @@ export async function GET(request: NextRequest) {
       .slice(0, 10);
 
     // Health score
-    let healthScore = 100;
-    healthScore -= analysis.cycles.length * 10;
-    const godFiles = hotspots.filter(h => h.connections > 15).length;
-    healthScore -= godFiles * 8;
-    const avgDeps = codeFiles.length > 0 ? analysis.edges.length / codeFiles.length : 0;
-    if (avgDeps > 5) healthScore -= 10;
-    const hasTests = analysis.nodes.some(n =>
-      n.path.includes("test") || n.path.includes("spec") || n.path.includes("__tests__")
-    );
-    if (hasTests) healthScore += 5;
-    healthScore = Math.max(0, Math.min(100, healthScore));
+    const health = computeHealthScore(analysis);
+    const healthScore = health.score;
+    const hasTests = health.hasTests;
+    const godFiles = health.godFiles;
 
     return NextResponse.json({
       repo: `${owner}/${repoName}`,

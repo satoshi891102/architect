@@ -49,6 +49,28 @@ export function getExtColor(ext: string): string {
   return EXT_COLORS[ext] || EXT_COLORS.default;
 }
 
+export function computeHealthScore(analysis: {
+  nodes: FileNode[];
+  edges: FileEdge[];
+  cycles: string[][];
+}): { score: number; hasTests: boolean; godFiles: number } {
+  const codeExts = ["ts", "tsx", "js", "jsx", "py", "go", "rs"];
+  const codeFiles = analysis.nodes.filter(n => codeExts.includes(n.ext));
+  let score = 100;
+  score -= analysis.cycles.length * 10;
+  const hotspots = analysis.nodes
+    .map(n => ({ connections: n.imports.length + n.importedBy.length }))
+    .filter(n => n.connections > 15);
+  score -= hotspots.length * 8;
+  const avgDeps = codeFiles.length > 0 ? analysis.edges.length / codeFiles.length : 0;
+  if (avgDeps > 5) score -= 10;
+  const hasTests = analysis.nodes.some(n =>
+    n.path.includes("test") || n.path.includes("spec") || n.path.includes("__tests__")
+  );
+  if (hasTests) score += 5;
+  return { score: Math.max(0, Math.min(100, score)), hasTests, godFiles: hotspots.length };
+}
+
 export async function fetchRepoTree(owner: string, repo: string, token?: string): Promise<RepoFile[]> {
   const headers: Record<string, string> = { Accept: "application/vnd.github.v3+json" };
   if (token) headers.Authorization = `Bearer ${token}`;

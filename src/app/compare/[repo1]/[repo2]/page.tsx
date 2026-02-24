@@ -1,4 +1,4 @@
-import { analyzeRepo } from "@/lib/github";
+import { analyzeRepo, computeHealthScore } from "@/lib/github";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -7,21 +7,6 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function computeHealth(analysis: any): number {
-  let score = 100;
-  score -= (analysis.cycles?.length || 0) * 10;
-  const codeFiles = analysis.nodes.filter((n: any) => ["ts","tsx","js","jsx","py","go","rs"].includes(n.ext));
-  const hotspots = analysis.nodes
-    .map((n: any) => ({ connections: n.imports.length + n.importedBy.length }))
-    .filter((n: any) => n.connections > 15);
-  score -= hotspots.length * 8;
-  const avgDeps = codeFiles.length > 0 ? analysis.edges.length / codeFiles.length : 0;
-  if (avgDeps > 5) score -= 10;
-  const hasTests = analysis.nodes.some((n: any) => n.path.includes("test") || n.path.includes("spec"));
-  if (hasTests) score += 5;
-  return Math.max(0, Math.min(100, score));
 }
 
 function StatCard({ label, v1, v2, higherIsBetter = true }: { label: string; v1: number | string; v2: number | string; higherIsBetter?: boolean }) {
@@ -73,8 +58,8 @@ export default async function CompareResultPage({
     );
   }
 
-  const h1 = computeHealth(a1);
-  const h2 = computeHealth(a2);
+  const h1 = computeHealthScore(a1).score;
+  const h2 = computeHealthScore(a2).score;
   const code1 = a1.nodes.filter(n => ["ts","tsx","js","jsx","py","go","rs"].includes(n.ext));
   const code2 = a2.nodes.filter(n => ["ts","tsx","js","jsx","py","go","rs"].includes(n.ext));
   const connected1 = a1.nodes.filter(n => n.imports.length > 0 || n.importedBy.length > 0).length;
