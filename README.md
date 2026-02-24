@@ -19,6 +19,7 @@ Paste a GitHub repo URL → instantly visualize its architecture, dependencies, 
 - **Node Click → Detail Panel** — Size, imports, "used by" count, with clickable links to navigate the graph.
 - **Colored Edges** — Green for outgoing imports, blue for incoming dependencies when a node is selected.
 - **Glow Effects** — Selected and related nodes glow to show the dependency subgraph.
+- **Repo Comparison** — Compare two repos side-by-side: health scores, file counts, dependency density, circular deps.
 - **Dynamic OG Images** — Share analysis links with rich previews.
 - **Mobile Responsive** — Sidebar toggles on smaller screens.
 
