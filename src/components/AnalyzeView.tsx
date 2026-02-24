@@ -320,6 +320,11 @@ export default function AnalyzeView({
             cooldownTicks={150}
             d3AlphaDecay={0.02}
             d3VelocityDecay={0.3}
+            onEngineStop={() => {
+              if (graphRef.current) {
+                (graphRef.current as any).zoomToFit(400, 40);
+              }
+            }}
             enableZoomInteraction={true}
             enablePanInteraction={true}
           />
