@@ -100,8 +100,11 @@ export default function Home() {
         {examples.map(ex => (
           <button
             key={ex.repo}
-            onClick={() => setUrl(ex.repo)}
-            className="px-2.5 py-1 rounded-lg bg-bg-1 border border-border-1 hover:border-accent/50 hover:text-text-1 transition-all"
+            onClick={() => {
+              setLoading(true);
+              router.push(`/analyze/${ex.repo}`);
+            }}
+            className="px-2.5 py-1 rounded-lg bg-bg-1 border border-border-1 hover:border-accent/50 hover:text-text-1 transition-all active:scale-95"
           >
             {ex.label}
           </button>
@@ -122,13 +125,6 @@ export default function Home() {
           <div className="text-[20px] font-semibold text-text-0">Free</div>
           <div className="text-[11px] text-text-3">Public Repos</div>
         </div>
-      </div>
-
-      {/* Compare link */}
-      <div className="mt-12">
-        <a href="/compare" className="text-[13px] text-text-2 hover:text-accent transition-colors border border-border-1 px-4 py-2 rounded-xl hover:border-accent/30">
-          ⚖ Compare two repos
-        </a>
       </div>
 
       {/* Footer */}
